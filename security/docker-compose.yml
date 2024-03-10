@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: postgres:v1
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - ./scripts:/scripts
+    ports:
+      - "5432:5432"
+
+  spring-boot-app:
+    image: maven:3.8-openjdk-18
+    container_name: spring_boot_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: 1234
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      bash -c "
+      mvn -B clean package &&
+      mvn spring-boot:run
+      "
+
